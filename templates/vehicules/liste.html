@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Véhicules{% endblock %}
+
+{% block content %}
+<h2>{{ vehicules|length }} véhicule{{ vehicules|length|pluralize }}</h2>
+<p><a href="{% url 'vehicules:ajouter' %}">+ Ajouter un véhicule</a></p>
+<ul>
+  {% for vehicule in vehicules %}
+    <li>
+      <a href="{% url 'vehicules:detail' vehicule.pk %}">{{ vehicule.immatriculation|upper }}</a>
+      — {{ vehicule.get_type_vehicule_display }},
+      {{ vehicule.capacite_kg }} kg
+      — Disponible : {{ vehicule.disponibilite|yesno:"Oui,Non" }}
+      <br>
+      <small>{{ vehicule.entreprise.raison_sociale }}</small>
+    </li>
+  {% empty %}
+    <li>Aucun véhicule enregistré.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

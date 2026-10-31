@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer {{ expedition.reference }}{% endblock %}
+
+{% block content %}
+<h2>Supprimer l'expédition {{ expedition.reference }} ?</h2>
+{% with nb=expedition.offre_set.count %}
+  <p>Cette action est définitive. {{ nb }} offre{{ nb|pluralize }} liée{{ nb|pluralize }} sera{{ nb|pluralize:"ont" }} aussi supprimée{{ nb|pluralize }}.</p>
+{% endwith %}
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Confirmer la suppression</button>
+</form>
+<p><a href="{% url 'expeditions:detail' expedition.reference %}">Annuler</a></p>
+{% endblock %}

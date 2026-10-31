@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if expedition %}Modifier {{ expedition.reference }}{% else %}Publier une expédition{% endif %}{% endblock %}
+
+{% block content %}
+{% if expedition %}
+  <h2>Modifier l'expédition {{ expedition.reference }}</h2>
+{% else %}
+  <h2>Publier une expédition pour {{ entreprise.raison_sociale }}</h2>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Enregistrer</button>
+</form>
+
+{% if expedition %}
+  <p><a href="{% url 'expeditions:detail' expedition.reference %}">Annuler</a></p>
+{% else %}
+  <p><a href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a></p>
+{% endif %}
+{% endblock %}

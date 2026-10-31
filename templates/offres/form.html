@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if offre %}Modifier l'offre n° {{ offre.pk }}{% else %}Proposer une offre{% endif %}{% endblock %}
+
+{% block content %}
+{% if offre %}
+  <h2>Modifier l'offre n° {{ offre.pk }} sur {{ offre.expedition.reference }}</h2>
+{% else %}
+  <h2>Proposer une offre — {{ entreprise.raison_sociale }}</h2>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">{% if offre %}Enregistrer{% else %}Envoyer l'offre{% endif %}</button>
+</form>
+
+{% if offre %}
+  <p><a href="{% url 'offres:detail' offre.pk %}">Annuler</a></p>
+{% else %}
+  <p><a href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a></p>
+{% endif %}
+{% endblock %}

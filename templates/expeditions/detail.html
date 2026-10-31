@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ expedition.reference }}{% endblock %}
+
+{% block content %}
+<h2>Expédition {{ expedition.reference }}</h2>
+<p>
+  <strong>Trajet :</strong> {{ expedition.ville_depart|title }} → {{ expedition.ville_arrive|title }}<br>
+  <strong>Poids :</strong> {{ expedition.poid_kg|floatformat:2 }} kg<br>
+  <strong>Date souhaitée :</strong> {{ expedition.date_souhaitée|date:"d/m/Y H:i" }}<br>
+  <strong>Statut :</strong> {{ expedition.get_statut_display }}<br>
+  <strong>Chargeur :</strong>
+  <a href="{% url 'entreprises:detail' expedition.entreprise.pk %}">{{ expedition.entreprise.raison_sociale }}</a><br>
+  <strong>Publiée il y a :</strong> {{ expedition.created_at|timesince }}
+</p>
+<p>{{ expedition.description|default:"Aucune description fournie." }}</p>
+
+<h3>{{ offres|length }} offre{{ offres|length|pluralize }}</h3>
+<ul>
+  {% for offre in offres %}
+    <li>
+      <a href="{% url 'offres:detail' offre.pk %}">{{ offre.transporteur.raison_sociale }}</a>
+      — {{ offre.prix|floatformat:2 }} DT,
+      {{ offre.delai_jours }} jour{{ offre.delai_jours|pluralize }}
+      ({{ offre.get_statut_display }})
+    </li>
+  {% empty %}
+    <li>Aucune offre reçue pour le moment.</li>
+  {% endfor %}
+</ul>
+
+<p>
+  {% if expedition.statut == 'publiee' %}
+    <a href="{% url 'expeditions:modifier' expedition.reference %}">Modifier</a> |
+  {% endif %}
+  <a href="{% url 'expeditions:supprimer' expedition.reference %}">Supprimer</a> |
+  <a href="{% url 'expeditions:liste' %}">← Retour à la liste</a>
+</p>
+{% endblock %}

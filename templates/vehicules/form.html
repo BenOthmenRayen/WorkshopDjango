@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if vehicule %}Modifier {{ vehicule.immatriculation|upper }}{% else %}Ajouter un véhicule{% endif %}{% endblock %}
+
+{% block content %}
+{% if vehicule %}
+  <h2>Modifier le véhicule {{ vehicule.immatriculation|upper }}</h2>
+{% else %}
+  <h2>Ajouter un véhicule</h2>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Enregistrer</button>
+</form>
+
+{% if vehicule %}
+  <p><a href="{% url 'vehicules:detail' vehicule.pk %}">Annuler</a></p>
+{% else %}
+  <p><a href="{% url 'vehicules:liste' %}">Annuler</a></p>
+{% endif %}
+{% endblock %}

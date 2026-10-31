@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer l'offre n° {{ offre.pk }}{% endblock %}
+
+{% block content %}
+<h2>Supprimer l'offre n° {{ offre.pk }} ?</h2>
+<p>
+  Offre de {{ offre.transporteur.raison_sociale }} sur {{ offre.expedition.reference }},
+  {{ offre.prix|floatformat:2 }} DT. Cette action est définitive.
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Confirmer la suppression</button>
+</form>
+<p><a href="{% url 'offres:detail' offre.pk %}">Annuler</a></p>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Supprimer {{ entreprise.raison_sociale }}{% endblock %}
+
+{% block content %}
+<h2>Supprimer {{ entreprise.raison_sociale }} ?</h2>
+<p>
+  Cette action est définitive. Tous ses véhicules, ses expéditions et ses offres
+  seront aussi supprimés. Le compte du gérant, lui, est conservé.
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Confirmer la suppression</button>
+</form>
+<p><a href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a></p>
+{% endblock %}

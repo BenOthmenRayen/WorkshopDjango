@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Offre n° {{ offre.pk }}{% endblock %}
+
+{% block content %}
+<h2>Offre n° {{ offre.pk }}</h2>
+<p>
+  <strong>Expédition :</strong>
+  <a href="{% url 'expeditions:detail' offre.expedition.reference %}">{{ offre.expedition.reference }}</a><br>
+  <strong>Transporteur :</strong>
+  <a href="{% url 'entreprises:detail' offre.transporteur.pk %}">{{ offre.transporteur.raison_sociale }}</a><br>
+  <strong>Véhicule :</strong>
+  <a href="{% url 'vehicules:detail' offre.vehicule.pk %}">{{ offre.vehicule.immatriculation|upper }}</a><br>
+  <strong>Prix :</strong> {{ offre.prix|floatformat:2 }} DT<br>
+  <strong>Délai :</strong> {{ offre.delai_jours }} jour{{ offre.delai_jours|pluralize }}<br>
+  <strong>Statut :</strong> {{ offre.get_statut_display }}<br>
+  <strong>Proposée le :</strong> {{ offre.date_proposition|date:"d/m/Y" }}
+</p>
+
+<p>
+  {% if offre.statut == 'proposee' %}
+    <a href="{% url 'offres:modifier' offre.pk %}">Modifier</a> |
+    <a href="{% url 'offres:supprimer' offre.pk %}">Supprimer</a> |
+  {% endif %}
+  <a href="{% url 'offres:liste' %}">← Retour à la liste</a>
+</p>
+{% endblock %}

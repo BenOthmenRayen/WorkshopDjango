@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if entreprise %}Modifier {{ entreprise.raison_sociale }}{% else %}Ajouter une entreprise{% endif %}{% endblock %}
+
+{% block content %}
+{% if entreprise %}
+  <h2>Modifier {{ entreprise.raison_sociale }}</h2>
+{% else %}
+  <h2>Ajouter une entreprise</h2>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Enregistrer</button>
+</form>
+
+{% if entreprise %}
+  <p><a href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a></p>
+{% else %}
+  <p><a href="{% url 'entreprises:liste' %}">Annuler</a></p>
+{% endif %}
+{% endblock %}

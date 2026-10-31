@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Entreprises{% endblock %}
+
+{% block content %}
+<h2>{{ entreprises|length }} entreprise{{ entreprises|length|pluralize }}</h2>
+<p><a href="{% url 'entreprises:ajouter' %}">+ Ajouter une entreprise</a></p>
+<ul>
+  {% for entreprise in entreprises %}
+    <li>
+      <a href="{% url 'entreprises:detail' entreprise.pk %}">{{ entreprise.raison_sociale }}</a>
+      — {{ entreprise.get_type_entreprise_display }}
+      — MF : {{ entreprise.matricule_fiscal|upper }}
+      <br>
+      <small>Gérant : {{ entreprise.gerant.username }}</small>
+    </li>
+  {% empty %}
+    <li>Aucune entreprise enregistrée.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

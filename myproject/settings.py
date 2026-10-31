@@ -13,19 +13,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+#Tous les autres chemins sont construits à partir de lui.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# la clé qui signe les sessions et les jetons CSRF. Elle doit rester secrète en production.
 SECRET_KEY = 'django-insecure-^5b@slyr-2a+74r9fnk6w(yj((3j&lgd1d%obv)x7^p#j=42)1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+#affiche les pages d’erreur jaunes détaillées, comme le
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [] #les noms de domaine autorisés. Une liste vide suffit en DEBUG, car localhost est accepté.
 
 
 # Application definition
@@ -43,22 +45,23 @@ INSTALLED_APPS = [
     'VehiculesApp',
 ]
 
+#Des couches que chaque requête traverse avant d’arriver à la vue
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',#garde votre connexion entre deux pages.
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',#protège les formulaires contre les envois frauduleux.
+    'django.contrib.auth.middleware.AuthenticationMiddleware',#crée request.user, l’utilisateur connecté.
+    'django.contrib.messages.middleware.MessageMiddleware',#fait fonctionner self.message_user(...) de votre action « Marquer comme livrée ».
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'myproject.urls'
+ROOT_URLCONF = 'myproject.urls'#Le fichier qui contient la table des URL (/admin/).
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,27 +81,32 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'rayen_benothmen.sqlite3',
+        'ENGINE': 'django.db.backends.sqlite3',#le type de base (SQLite).
+        'NAME': BASE_DIR / 'rayen_benothmen.sqlite3',#le fichier de la base, à mon nom,
     }
 }
 
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+#Les règles de mot de passe : Ce sont les avertissements de createsuperuser.
 
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        # pas trop proche du nom d’utilisateur,
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        #8 caractères minimum 
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        # ne pas être un mot de passe courant   
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        # ne pas être uniquement des chiffres
     },
 ]
 
@@ -106,14 +114,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-us' # la langue de l’admin. Avec 'fr', l’admin serait en français.
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'UTC' #timezone.now() renvoie la date avec son fuseau horaire. On l’utilise toujours à la place de datetime.now().
 
 USE_I18N = True
 
-USE_TZ = True
-
+USE_TZ = True  # les dates sont stockées en UTC. C’est pour ça que la page d’erreur affichait 22:33 alors qu’il était 23:33 à Tunis. 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -124,4 +131,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+#Le type de l’id automatique (un grand entier : 1, 2, 3…) ajouté aux modèles qui ne définissent pas de PK. 
+# C’est le cas d’Entreprise, Vehicule, Expedition et Offre, mais pas d’Utilisateur, qui a son user_id.
 AUTH_USER_MODEL="EntrepriseApp.Utilisateur"
+#Remplace l’utilisateur par défaut de Django par le vôtre. Format "App.Modele". 
+# Elle doit être déclarée avant le premier migrate.

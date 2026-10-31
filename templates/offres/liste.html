@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Offres{% endblock %}
+
+{% block content %}
+<h2>{{ offres|length }} offre{{ offres|length|pluralize }}</h2>
+<p><small>Pour proposer une offre, passez par la page d'une entreprise transporteur.</small></p>
+<ul>
+  {% for offre in offres %}
+    <li>
+      <a href="{% url 'offres:detail' offre.pk %}">Offre n° {{ offre.pk }}</a>
+      — {{ offre.transporteur.raison_sociale }} sur {{ offre.expedition.reference }}
+      — {{ offre.prix|floatformat:2 }} DT
+      ({{ offre.get_statut_display }})
+    </li>
+  {% empty %}
+    <li>Aucune offre pour le moment.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

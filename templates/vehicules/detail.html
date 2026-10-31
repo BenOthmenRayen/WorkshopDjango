@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ vehicule.immatriculation|upper }}{% endblock %}
+
+{% block content %}
+<h2>Véhicule {{ vehicule.immatriculation|upper }}</h2>
+<p>
+  <strong>Type :</strong> {{ vehicule.get_type_vehicule_display }}<br>
+  <strong>Capacité :</strong> {{ vehicule.capacite_kg }} kg<br>
+  <strong>Disponible :</strong> {{ vehicule.disponibilite|yesno:"Oui,Non" }}<br>
+  <strong>Transporteur :</strong>
+  <a href="{% url 'entreprises:detail' vehicule.entreprise.pk %}">{{ vehicule.entreprise.raison_sociale }}</a><br>
+  <strong>Ajouté il y a :</strong> {{ vehicule.created_at|timesince }}
+</p>
+
+<h3>Offres où ce véhicule est proposé ({{ offres|length }})</h3>
+<ul>
+  {% for offre in offres %}
+    <li>
+      <a href="{% url 'offres:detail' offre.pk %}">{{ offre.expedition.reference }}</a>
+      — {{ offre.prix|floatformat:2 }} DT ({{ offre.get_statut_display }})
+    </li>
+  {% empty %}
+    <li>Ce véhicule n'a encore été proposé sur aucune offre.</li>
+  {% endfor %}
+</ul>
+
+<p>
+  <a href="{% url 'vehicules:modifier' vehicule.pk %}">Modifier</a> |
+  <a href="{% url 'vehicules:supprimer' vehicule.pk %}">Supprimer</a> |
+  <a href="{% url 'vehicules:liste' %}">← Retour à la liste</a>
+</p>
+{% endblock %}
