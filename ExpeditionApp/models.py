@@ -1,5 +1,5 @@
 from django.db import models
-from EntrepriseApp.models import Entreprise
+from EntrepriseApp.models import Entreprise#Module ORM.
 import django.utils.timezone as timezone
 from django.core.exceptions import ValidationError
 
@@ -8,6 +8,8 @@ class Expedition(models.Model):
     ville_depart=models.CharField(max_length=20)
     ville_arrive=models.CharField(max_length=20)
     date_souhaitée=models.DateTimeField()
+    #DateTimeField sans auto_now ni auto_now_add : c’est l’utilisateur qui saisit la valeur. Dans l’admin, 
+    # Django affiche un sélecteur de date et un sélecteur d’heure.
     poid_kg=models.DecimalField(decimal_places=2,max_digits=10)
     statut=models.CharField(max_length=10,choices=[('publiee','publiee'),('Attribue','attribue'),('en_cours',"En_cours"),('livrée','Livrée'),('Annulée','annulée')],default='publiée')
     entreprise=models.ForeignKey(Entreprise, on_delete=models.CASCADE, related_name='expeditions')
@@ -24,8 +26,10 @@ class Expedition(models.Model):
             self.full_clean()  # Validate the model fields before saving
             if not self.pk:
                 self.reference=self._generate_reference()
+                #On génère la référence uniquement à la création. 
+                # En modification, elle reste la même.
             return super().save(*args, **kwargs)
-    @classmethod
+    @classmethod    
     def _generate_reference(cls):
         annee = timezone.now().strftime("%y")
         prefixe = f"EXP-{annee}-"
@@ -34,4 +38,7 @@ class Expedition(models.Model):
         if compteur >9999:
             raise ValueError(f"Le compteur a dépassé la limite de 9999 par annee {annee}")
         return f"{prefixe}{compteur:05d}"
-    
+
+
+#Entreprise (chargeur) ──1───*── Expedition ──1───*── Offre
+#Plusieurs-1, accès entreprise.expeditions.

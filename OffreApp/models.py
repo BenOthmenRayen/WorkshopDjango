@@ -7,10 +7,15 @@ from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from django.utils import timezone
 
+
+#Ce sont des imports entre applications. Chaque application Django a ses propres modèles, 
+# et on importe ceux dont on a besoin pour créer des relations. C’est ainsi que le projet est découpé en modules (une application par domaine métier).
 from EntrepriseApp.models import Entreprise
 from ExpeditionApp.models import Expedition
 from VehiculesApp.models import Vehicule
 
+
+#un dictionnaire dont la clé est le type de véhicule et la valeur un tuple (poids_min, poids_max) en kg.
 PLAGES_POIDS_PAR_TYPE_VEHICULE = {
     'camionnette': (Decimal(0), Decimal(1500)),
     'fourgon': (Decimal(1500), Decimal(3500)),
@@ -18,7 +23,7 @@ PLAGES_POIDS_PAR_TYPE_VEHICULE = {
     'semi_remorque': (Decimal(19000), Decimal(26000)),
 }
 class Offre(models.Model):
-    STATUT_CHOICES = [
+    STATUT_CHOICES = [#constante declaree en majuscule 
         ('proposee', 'Proposee'),
         ('acceptee', 'Acceptee'),
         ('refusee', 'Refusee'),
@@ -26,18 +31,23 @@ class Offre(models.Model):
     ]
 
     prix = models.DecimalField(
-        decimal_places=2,
+        decimal_places=2,# nombre décimal exact (NUMERIC en SQL), idéal pour l’argent.
         max_digits=10,
-        validators=[MinValueValidator(1, message='Le prix doit être supérieur à 0')],
+        validators=[MinValueValidator(1, message='Le prix doit être supérieur à 1')],
     )
     delai_jours = models.PositiveIntegerField(
         validators=[MinValueValidator(1, message='Une valeur supérieure ou égale à 1 est requise')]
     )
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='proposee')
     date_proposition = models.DateField(auto_now_add=True)
+#DateField : date seule (2026-10-24), alors que DateTimeField contient date et heure.
+#Remarque : ce champ fait doublon avec created_at, qui contient déjà cette information.
+#Ce n’est pas une erreur, mais l’un des deux suffit.
     expedition = models.ForeignKey(Expedition, on_delete=models.CASCADE)
     transporteur = models.ForeignKey(Entreprise, on_delete=models.CASCADE)
     vehicule = models.ForeignKey(Vehicule, on_delete=models.CASCADE)
+
+#ForeignKey est la relation plusieurs — 1 (many-to-one). C’est la différence avec le OneToOneField déjà vu :
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -100,6 +110,9 @@ class Offre(models.Model):
             if self.statut == 'acceptee' and previous_statut != 'acceptee':
                 self._appliquer_cascade_acceptation()
 
+
+#Cette méthode est appelée uniquement lorsque le statut de l’offre passe à "acceptee".
+#Cette méthode applique les conséquences métier de l'acceptation d'une offre.
     def _appliquer_cascade_acceptation(self):
         expedition_model = apps.get_model('ExpeditionApp', 'Expedition')
         expedition_model.objects.filter(pk=self.expedition_id).update(statut='attribue')
@@ -109,5 +122,6 @@ class Offre(models.Model):
             statut='proposee',
         ).exclude(pk=self.pk).update(statut='refusee', updated_at=timezone.now())
    
-
+#Ce code vérifie la validité d’une offre avec clean() (transporteur, véhicule, poids, doublons et statut de l’expédition), puis save() valide et enregistre l’offre.
+#Si l’offre devient acceptée, _appliquer_cascade_acceptation() attribue l’expédition au transporteur et refuse automatiquement les autres offres encore proposées pour cette expédition.
     

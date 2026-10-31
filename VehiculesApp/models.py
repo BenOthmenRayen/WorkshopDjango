@@ -13,7 +13,7 @@ class Vehicule(models.Model):
     immatriculation=models.CharField(max_length=15,unique=True)
     type_vehicule = models.CharField(max_length=14, choices=TYPES_VEHICULE)
     capacite_kg=models.PositiveIntegerField(validators=[MinValueValidator(1,"une capacité nulle ne peut pas être acceptée")])
-    disponibilite=models.BooleanField(default=True)
+    disponibilite=models.BooleanField(default=True)# has to have a default value 
     entreprise=models.ForeignKey('EntrepriseApp.Entreprise',on_delete=models.CASCADE,related_name='vehicules')
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
@@ -27,3 +27,10 @@ class Vehicule(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+
+#Entreprise (transporteur) ──1───*── Vehicule ──1───*── Offre
+
+#entreprise.vehicules.all()                          # tous ses véhicules
+#entreprise.vehicules.filter(disponibilite=True)     # ses véhicules disponibles
