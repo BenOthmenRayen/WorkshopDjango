@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -13,7 +15,7 @@ from .models import Expedition
 # =============================================================================
 # Partie 2 — Class-Based Views (routées)
 # =============================================================================
-class ExpeditionListView(ListView):
+class ExpeditionListView(LoginRequiredMixin, ListView):
     model = Expedition
     template_name = 'expeditions/liste.html'
     context_object_name = 'expeditions'
@@ -27,7 +29,7 @@ class ExpeditionListView(ListView):
         )
 
 
-class ExpeditionDetailView(DetailView):
+class ExpeditionDetailView(LoginRequiredMixin, DetailView):
     model = Expedition
     template_name = 'expeditions/detail.html'
     context_object_name = 'expedition'
@@ -47,13 +49,13 @@ class ExpeditionDetailView(DetailView):
         return context
 
 
-class ExpeditionCreateView(CreateView):
+class ExpeditionCreateView(LoginRequiredMixin, CreateView):
     model = Expedition
     form_class = ExpeditionForm
     template_name = 'expeditions/form.html'
 
     def get_entreprise_courante(self):
-        # Pas d'authentification : le chargeur est passé dans l'URL
+        # Le chargeur est encore passé dans l'URL (remplacé par request.user en section VI)
         return get_object_or_404(
             Entreprise, pk=self.kwargs['entreprise_id'], type_entreprise='chargeur'
         )
@@ -77,7 +79,7 @@ class ExpeditionCreateView(CreateView):
         return reverse('expeditions:detail', kwargs={'reference': self.object.reference})
 
 
-class ExpeditionUpdateView(UpdateView):
+class ExpeditionUpdateView(LoginRequiredMixin, UpdateView):
     model = Expedition
     form_class = ExpeditionForm
     template_name = 'expeditions/form.html'
@@ -100,7 +102,7 @@ class ExpeditionUpdateView(UpdateView):
         return reverse('expeditions:detail', kwargs={'reference': self.object.reference})
 
 
-class ExpeditionDeleteView(DeleteView):
+class ExpeditionDeleteView(LoginRequiredMixin, DeleteView):
     model = Expedition
     template_name = 'expeditions/confirm_delete.html'
     context_object_name = 'expedition'
@@ -112,6 +114,7 @@ class ExpeditionDeleteView(DeleteView):
 # =============================================================================
 # Partie 1 — Function-Based Views (référence, non routées)
 # =============================================================================
+@login_required
 def liste_expeditions(request):
     expeditions = (
         Expedition.objects
@@ -122,6 +125,7 @@ def liste_expeditions(request):
     return render(request, 'expeditions/liste.html', {'expeditions': expeditions})
 
 
+@login_required
 def detail_expedition(request, reference):
     expedition = get_object_or_404(
         Expedition.objects.select_related('entreprise'),
@@ -139,6 +143,7 @@ def detail_expedition(request, reference):
     )
 
 
+@login_required
 @require_POST
 def supprimer_expedition(request, reference):
     expedition = get_object_or_404(Expedition, reference=reference)

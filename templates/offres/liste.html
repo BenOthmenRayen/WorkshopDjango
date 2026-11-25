@@ -3,18 +3,36 @@
 {% block title %}Offres{% endblock %}
 
 {% block content %}
-<h2>{{ offres|length }} offre{{ offres|length|pluralize }}</h2>
-<p><small>Pour proposer une offre, passez par la page d'une entreprise transporteur.</small></p>
-<ul>
-  {% for offre in offres %}
-    <li>
-      <a href="{% url 'offres:detail' offre.pk %}">Offre n° {{ offre.pk }}</a>
-      — {{ offre.transporteur.raison_sociale }} sur {{ offre.expedition.reference }}
-      — {{ offre.prix|floatformat:2 }} DT
-      ({{ offre.get_statut_display }})
-    </li>
-  {% empty %}
-    <li>Aucune offre pour le moment.</li>
-  {% endfor %}
-</ul>
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Propositions</p>
+    <h1>{{ offres|length }} offre{{ offres|length|pluralize }}</h1>
+    <p class="subtitle">Les prix proposés par les transporteurs sur les expéditions.</p>
+  </div>
+  {% if user.entreprise.type_entreprise == 'transporteur' %}
+    <div class="actions">
+      <a class="btn btn-primary" href="{% url 'offres:ajouter' user.entreprise.pk %}">+ Proposer une offre</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if offres %}
+  <div class="grid">
+    {% for offre in offres %}
+      <article class="item-card">
+        <div class="top">
+          <a class="title" href="{% url 'offres:detail' offre.pk %}">Offre n° {{ offre.pk }}</a>
+          <span class="badge badge-{{ offre.statut|slugify }}">{{ offre.get_statut_display }}</span>
+        </div>
+        <div class="price">{{ offre.prix|floatformat:2 }} DT</div>
+        <div class="stats">
+          <span>Expédition : <strong>{{ offre.expedition.reference }}</strong></span>
+        </div>
+        <div class="meta">{{ offre.transporteur.raison_sociale }}</div>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty"><span class="icon">💼</span>Aucune offre pour le moment.</div>
+{% endif %}
 {% endblock %}

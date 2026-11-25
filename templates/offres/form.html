@@ -3,21 +3,31 @@
 {% block title %}{% if offre %}Modifier l'offre n° {{ offre.pk }}{% else %}Proposer une offre{% endif %}{% endblock %}
 
 {% block content %}
-{% if offre %}
-  <h2>Modifier l'offre n° {{ offre.pk }} sur {{ offre.expedition.reference }}</h2>
-{% else %}
-  <h2>Proposer une offre — {{ entreprise.raison_sociale }}</h2>
-{% endif %}
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Offres</p>
+    {% if offre %}
+      <h1>Modifier l'offre n° {{ offre.pk }}</h1>
+      <p class="subtitle">Sur l'expédition {{ offre.expedition.reference }}</p>
+    {% else %}
+      <h1>Proposer une offre</h1>
+      <p class="subtitle">Pour le compte de {{ entreprise.raison_sociale }}</p>
+    {% endif %}
+  </div>
+</div>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">{% if offre %}Enregistrer{% else %}Envoyer l'offre{% endif %}</button>
-</form>
-
-{% if offre %}
-  <p><a href="{% url 'offres:detail' offre.pk %}">Annuler</a></p>
-{% else %}
-  <p><a href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a></p>
-{% endif %}
+<div class="card form-card">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">{% if offre %}Enregistrer{% else %}Envoyer l'offre{% endif %}</button>
+      {% if offre %}
+        <a class="btn btn-outline" href="{% url 'offres:detail' offre.pk %}">Annuler</a>
+      {% else %}
+        <a class="btn btn-outline" href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
 {% endblock %}

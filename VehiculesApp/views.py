@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.http import require_POST
@@ -10,7 +12,7 @@ from .models import Vehicule
 # =============================================================================
 # Partie 2 — Class-Based Views (routées)
 # =============================================================================
-class VehiculeListView(ListView):
+class VehiculeListView(LoginRequiredMixin, ListView):
     model = Vehicule
     template_name = 'vehicules/liste.html'
     context_object_name = 'vehicules'
@@ -19,7 +21,7 @@ class VehiculeListView(ListView):
         return Vehicule.objects.select_related('entreprise').order_by('immatriculation')
 
 
-class VehiculeDetailView(DetailView):
+class VehiculeDetailView(LoginRequiredMixin, DetailView):
     model = Vehicule
     template_name = 'vehicules/detail.html'
     context_object_name = 'vehicule'
@@ -37,7 +39,7 @@ class VehiculeDetailView(DetailView):
         return context
 
 
-class VehiculeCreateView(CreateView):
+class VehiculeCreateView(LoginRequiredMixin, CreateView):
     model = Vehicule
     form_class = VehiculeForm
     template_name = 'vehicules/form.html'
@@ -54,7 +56,7 @@ class VehiculeCreateView(CreateView):
         return reverse('vehicules:detail', kwargs={'pk': self.object.pk})
 
 
-class VehiculeUpdateView(UpdateView):
+class VehiculeUpdateView(LoginRequiredMixin, UpdateView):
     model = Vehicule
     form_class = VehiculeForm
     template_name = 'vehicules/form.html'
@@ -64,7 +66,7 @@ class VehiculeUpdateView(UpdateView):
         return reverse('vehicules:detail', kwargs={'pk': self.object.pk})
 
 
-class VehiculeDeleteView(DeleteView):
+class VehiculeDeleteView(LoginRequiredMixin, DeleteView):
     model = Vehicule
     template_name = 'vehicules/confirm_delete.html'
     context_object_name = 'vehicule'
@@ -74,6 +76,7 @@ class VehiculeDeleteView(DeleteView):
 # =============================================================================
 # Partie 1 — Function-Based Views (référence, non routées)
 # =============================================================================
+@login_required
 def liste_vehicules(request):
     vehicules = (
         Vehicule.objects
@@ -83,6 +86,7 @@ def liste_vehicules(request):
     return render(request, 'vehicules/liste.html', {'vehicules': vehicules})
 
 
+@login_required
 def detail_vehicule(request, pk):
     vehicule = get_object_or_404(
         Vehicule.objects.select_related('entreprise'),
@@ -100,6 +104,7 @@ def detail_vehicule(request, pk):
     )
 
 
+@login_required
 @require_POST
 def supprimer_vehicule(request, pk):
     vehicule = get_object_or_404(Vehicule, pk=pk)

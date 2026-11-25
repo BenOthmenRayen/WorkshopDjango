@@ -1,19 +1,72 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>{% block title %}TransConnect{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}TransConnect{% endblock %} · TransConnect</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-  <nav>
-    <a href="{% url 'expeditions:liste' %}">Expéditions</a> |
-    <a href="{% url 'vehicules:liste' %}">Véhicules</a> |
-    <a href="{% url 'offres:liste' %}">Offres</a> |
-    <a href="{% url 'entreprises:liste' %}">Entreprises</a> |
-    <a href="{% url 'admin:index' %}">Admin</a>
-  </nav>
-  <hr>
+  {% with ns=request.resolver_match.namespace %}
+  <header class="navbar">
+    <div class="container">
+      <a class="brand" href="{% url 'expeditions:liste' %}">
+        <span class="brand-logo">🚚</span>
+        <span>Trans<span class="accent">Connect</span></span>
+      </a>
 
-  {% block content %}{% endblock %}
+      <nav class="nav-links">
+        <a href="{% url 'expeditions:liste' %}" class="{% if ns == 'expeditions' %}active{% endif %}">Expéditions</a>
+        <a href="{% url 'vehicules:liste' %}" class="{% if ns == 'vehicules' %}active{% endif %}">Véhicules</a>
+        <a href="{% url 'offres:liste' %}" class="{% if ns == 'offres' %}active{% endif %}">Offres</a>
+        <a href="{% url 'entreprises:liste' %}" class="{% if ns == 'entreprises' %}active{% endif %}">Entreprises</a>
+        {% if user.is_staff %}
+          <a href="{% url 'admin:index' %}">Admin</a>
+        {% endif %}
+      </nav>
+
+      <div class="nav-user">
+        {% if user.is_authenticated %}
+          {% if user.entreprise %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'entreprises:detail' user.entreprise.pk %}">Mon entreprise</a>
+          {% else %}
+            <a class="btn btn-primary btn-sm" href="{% url 'entreprises:ajouter' %}">Créer mon entreprise</a>
+          {% endif %}
+          <span class="user-chip">
+            <span class="avatar">{{ user.username|first }}</span>
+            <span class="name">{{ user.username }}</span>
+          </span>
+          {# Déconnexion en POST : depuis Django 5.0, LogoutView refuse le GET (erreur 405) #}
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm">Se déconnecter</button>
+          </form>
+        {% else %}
+          <a class="btn btn-ghost btn-sm" href="{% url 'login' %}">Se connecter</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'inscription' %}">Créer un compte</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+  {% endwith %}
+
+  <main>
+    <div class="container">
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">TransConnect · Plateforme de mise en relation chargeurs &amp; transporteurs</div>
+  </footer>
 </body>
 </html>

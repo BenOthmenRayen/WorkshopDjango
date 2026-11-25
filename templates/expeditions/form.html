@@ -3,21 +3,30 @@
 {% block title %}{% if expedition %}Modifier {{ expedition.reference }}{% else %}Publier une expédition{% endif %}{% endblock %}
 
 {% block content %}
-{% if expedition %}
-  <h2>Modifier l'expédition {{ expedition.reference }}</h2>
-{% else %}
-  <h2>Publier une expédition pour {{ entreprise.raison_sociale }}</h2>
-{% endif %}
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Expéditions</p>
+    {% if expedition %}
+      <h1>Modifier l'expédition {{ expedition.reference }}</h1>
+    {% else %}
+      <h1>Publier une expédition</h1>
+      <p class="subtitle">Pour le compte de {{ entreprise.raison_sociale }}</p>
+    {% endif %}
+  </div>
+</div>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Enregistrer</button>
-</form>
-
-{% if expedition %}
-  <p><a href="{% url 'expeditions:detail' expedition.reference %}">Annuler</a></p>
-{% else %}
-  <p><a href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a></p>
-{% endif %}
+<div class="card form-card">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Enregistrer</button>
+      {% if expedition %}
+        <a class="btn btn-outline" href="{% url 'expeditions:detail' expedition.reference %}">Annuler</a>
+      {% else %}
+        <a class="btn btn-outline" href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
 {% endblock %}

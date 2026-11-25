@@ -3,20 +3,45 @@
 {% block title %}Expéditions disponibles{% endblock %}
 
 {% block content %}
-<h2>Expéditions publiées ({{ expeditions|length }})</h2>
-<p><small>Pour publier une expédition, passez par la page d'une entreprise chargeur.</small></p>
-<ul>
-  {% for expedition in expeditions %}
-    <li>
-      <a href="{% url 'expeditions:detail' expedition.reference %}">{{ expedition.reference }}</a>
-      — {{ expedition.ville_depart|title }} → {{ expedition.ville_arrive|title }}
-      ({{ expedition.poid_kg|floatformat:0 }} kg,
-      souhaitée le {{ expedition.date_souhaitée|date:"d/m/Y" }})
-      <br>
-      <small>{{ expedition.description|default:"Aucune description fournie."|truncatewords:15 }}</small>
-    </li>
-  {% empty %}
-    <li>Aucune expédition disponible pour le moment.</li>
-  {% endfor %}
-</ul>
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Marché du fret</p>
+    <h1>Expéditions publiées ({{ expeditions|length }})</h1>
+    <p class="subtitle">Les chargements en attente d'un transporteur.</p>
+  </div>
+  {% if user.entreprise.type_entreprise == 'chargeur' %}
+    <div class="actions">
+      <a class="btn btn-primary" href="{% url 'expeditions:ajouter' user.entreprise.pk %}">+ Publier une expédition</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if not user.is_authenticated %}
+  <p class="hint">ℹ Pour publier une expédition ou proposer une offre, <a href="{% url 'login' %}">connectez-vous</a> ou <a href="{% url 'inscription' %}">créez un compte</a>.</p>
+{% endif %}
+
+{% if expeditions %}
+  <div class="grid">
+    {% for expedition in expeditions %}
+      <article class="item-card">
+        <div class="top">
+          <a class="title" href="{% url 'expeditions:detail' expedition.reference %}">{{ expedition.reference }}</a>
+          <span class="badge badge-{{ expedition.statut|slugify }}">{{ expedition.get_statut_display }}</span>
+        </div>
+        <div class="route">
+          <span>{{ expedition.ville_depart|title }}</span>
+          <span class="arrow">→</span>
+          <span>{{ expedition.ville_arrive|title }}</span>
+        </div>
+        <div class="stats">
+          <span>Poids : <strong>{{ expedition.poid_kg|floatformat:0 }} kg</strong></span>
+          <span>Souhaitée le <strong>{{ expedition.date_souhaitée|date:"d/m/Y" }}</strong></span>
+        </div>
+        <p class="desc">{{ expedition.description|default:"Aucune description fournie."|truncatewords:15 }}</p>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty"><span class="icon">📦</span>Aucune expédition disponible pour le moment.</div>
+{% endif %}
 {% endblock %}

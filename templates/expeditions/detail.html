@@ -3,37 +3,59 @@
 {% block title %}{{ expedition.reference }}{% endblock %}
 
 {% block content %}
-<h2>Expédition {{ expedition.reference }}</h2>
-<p>
-  <strong>Trajet :</strong> {{ expedition.ville_depart|title }} → {{ expedition.ville_arrive|title }}<br>
-  <strong>Poids :</strong> {{ expedition.poid_kg|floatformat:2 }} kg<br>
-  <strong>Date souhaitée :</strong> {{ expedition.date_souhaitée|date:"d/m/Y H:i" }}<br>
-  <strong>Statut :</strong> {{ expedition.get_statut_display }}<br>
-  <strong>Chargeur :</strong>
-  <a href="{% url 'entreprises:detail' expedition.entreprise.pk %}">{{ expedition.entreprise.raison_sociale }}</a><br>
-  <strong>Publiée il y a :</strong> {{ expedition.created_at|timesince }}
-</p>
-<p>{{ expedition.description|default:"Aucune description fournie." }}</p>
-
-<h3>{{ offres|length }} offre{{ offres|length|pluralize }}</h3>
-<ul>
-  {% for offre in offres %}
-    <li>
-      <a href="{% url 'offres:detail' offre.pk %}">{{ offre.transporteur.raison_sociale }}</a>
-      — {{ offre.prix|floatformat:2 }} DT,
-      {{ offre.delai_jours }} jour{{ offre.delai_jours|pluralize }}
-      ({{ offre.get_statut_display }})
-    </li>
-  {% empty %}
-    <li>Aucune offre reçue pour le moment.</li>
-  {% endfor %}
-</ul>
-
-<p>
-  {% if expedition.statut == 'publiee' %}
-    <a href="{% url 'expeditions:modifier' expedition.reference %}">Modifier</a> |
+<div class="page-header">
+  <div>
+    <p class="eyebrow"><a href="{% url 'expeditions:liste' %}">← Expéditions</a></p>
+    <h1>Expédition {{ expedition.reference }}</h1>
+    <span class="badge badge-{{ expedition.statut|slugify }}">{{ expedition.get_statut_display }}</span>
+  </div>
+  {% if user.is_authenticated %}
+    <div class="actions">
+      {% if expedition.statut == 'publiee' %}
+        <a class="btn btn-outline" href="{% url 'expeditions:modifier' expedition.reference %}">Modifier</a>
+      {% endif %}
+      <a class="btn btn-danger" href="{% url 'expeditions:supprimer' expedition.reference %}">Supprimer</a>
+    </div>
   {% endif %}
-  <a href="{% url 'expeditions:supprimer' expedition.reference %}">Supprimer</a> |
-  <a href="{% url 'expeditions:liste' %}">← Retour à la liste</a>
-</p>
+</div>
+
+<div class="card">
+  <div class="route" style="font-size:1.2rem; margin-bottom:1.1rem;">
+    <span>{{ expedition.ville_depart|title }}</span>
+    <span class="arrow">→</span>
+    <span>{{ expedition.ville_arrive|title }}</span>
+  </div>
+  <dl class="details">
+    <div><dt>Poids</dt><dd>{{ expedition.poid_kg|floatformat:2 }} kg</dd></div>
+    <div><dt>Date souhaitée</dt><dd>{{ expedition.date_souhaitée|date:"d/m/Y H:i" }}</dd></div>
+    <div><dt>Chargeur</dt><dd><a href="{% url 'entreprises:detail' expedition.entreprise.pk %}">{{ expedition.entreprise.raison_sociale }}</a></dd></div>
+    <div><dt>Publiée il y a</dt><dd>{{ expedition.created_at|timesince }}</dd></div>
+  </dl>
+  <div class="description-box">{{ expedition.description|default:"Aucune description fournie." }}</div>
+</div>
+
+<section class="section card">
+  <div class="section-header">
+    <h2>{{ offres|length }} offre{{ offres|length|pluralize }} reçue{{ offres|length|pluralize }}</h2>
+    {% if user.entreprise.type_entreprise == 'transporteur' and expedition.statut == 'publiee' %}
+      <a class="btn btn-primary btn-sm" href="{% url 'offres:ajouter' user.entreprise.pk %}">+ Proposer une offre</a>
+    {% endif %}
+  </div>
+  <ul class="list">
+    {% for offre in offres %}
+      <li>
+        <span>
+          <a href="{% url 'offres:detail' offre.pk %}">{{ offre.transporteur.raison_sociale }}</a>
+          <span class="muted">— {{ offre.delai_jours }} jour{{ offre.delai_jours|pluralize }}</span>
+        </span>
+        <span class="actions">
+          <span class="price">{{ offre.prix|floatformat:2 }} DT</span>
+          <span class="badge badge-{{ offre.statut|slugify }}">{{ offre.get_statut_display }}</span>
+        </span>
+      </li>
+    {% empty %}
+      <li class="empty-line">Aucune offre reçue pour le moment.</li>
+    {% endfor %}
+  </ul>
+</section>
 {% endblock %}

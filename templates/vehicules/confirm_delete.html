@@ -3,14 +3,19 @@
 {% block title %}Supprimer {{ vehicule.immatriculation|upper }}{% endblock %}
 
 {% block content %}
-<h2>Supprimer le véhicule {{ vehicule.immatriculation|upper }} ?</h2>
-{% with nb=vehicule.offre_set.count %}
-  <p>Cette action est définitive. {{ nb }} offre{{ nb|pluralize }} liée{{ nb|pluralize }} sera{{ nb|pluralize:"ont" }} aussi supprimée{{ nb|pluralize }}.</p>
-{% endwith %}
+<div class="card danger-card">
+  <div class="icon-circle">⚠</div>
+  <h1>Supprimer le véhicule {{ vehicule.immatriculation|upper }} ?</h1>
+  {% with nb=vehicule.offre_set.count %}
+    <p>Cette action est définitive. {{ nb }} offre{{ nb|pluralize }} liée{{ nb|pluralize }} sera{{ nb|pluralize:"ont" }} aussi supprimée{{ nb|pluralize }}.</p>
+  {% endwith %}
 
-<form method="post">
-  {% csrf_token %}
-  <button type="submit">Confirmer la suppression</button>
-</form>
-<p><a href="{% url 'vehicules:detail' vehicule.pk %}">Annuler</a></p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+      <a class="btn btn-outline" href="{% url 'vehicules:detail' vehicule.pk %}">Annuler</a>
+    </div>
+  </form>
+</div>
 {% endblock %}

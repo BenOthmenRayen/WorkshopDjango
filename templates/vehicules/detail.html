@@ -3,31 +3,49 @@
 {% block title %}{{ vehicule.immatriculation|upper }}{% endblock %}
 
 {% block content %}
-<h2>Véhicule {{ vehicule.immatriculation|upper }}</h2>
-<p>
-  <strong>Type :</strong> {{ vehicule.get_type_vehicule_display }}<br>
-  <strong>Capacité :</strong> {{ vehicule.capacite_kg }} kg<br>
-  <strong>Disponible :</strong> {{ vehicule.disponibilite|yesno:"Oui,Non" }}<br>
-  <strong>Transporteur :</strong>
-  <a href="{% url 'entreprises:detail' vehicule.entreprise.pk %}">{{ vehicule.entreprise.raison_sociale }}</a><br>
-  <strong>Ajouté il y a :</strong> {{ vehicule.created_at|timesince }}
-</p>
+<div class="page-header">
+  <div>
+    <p class="eyebrow"><a href="{% url 'vehicules:liste' %}">← Véhicules</a></p>
+    <h1>Véhicule {{ vehicule.immatriculation|upper }}</h1>
+    {% if vehicule.disponibilite %}
+      <span class="badge badge-oui">Disponible</span>
+    {% else %}
+      <span class="badge badge-non">Indisponible</span>
+    {% endif %}
+  </div>
+  {% if user.is_authenticated %}
+    <div class="actions">
+      <a class="btn btn-outline" href="{% url 'vehicules:modifier' vehicule.pk %}">Modifier</a>
+      <a class="btn btn-danger" href="{% url 'vehicules:supprimer' vehicule.pk %}">Supprimer</a>
+    </div>
+  {% endif %}
+</div>
 
-<h3>Offres où ce véhicule est proposé ({{ offres|length }})</h3>
-<ul>
-  {% for offre in offres %}
-    <li>
-      <a href="{% url 'offres:detail' offre.pk %}">{{ offre.expedition.reference }}</a>
-      — {{ offre.prix|floatformat:2 }} DT ({{ offre.get_statut_display }})
-    </li>
-  {% empty %}
-    <li>Ce véhicule n'a encore été proposé sur aucune offre.</li>
-  {% endfor %}
-</ul>
+<div class="card">
+  <dl class="details">
+    <div><dt>Type</dt><dd>{{ vehicule.get_type_vehicule_display }}</dd></div>
+    <div><dt>Capacité</dt><dd>{{ vehicule.capacite_kg }} kg</dd></div>
+    <div><dt>Transporteur</dt><dd><a href="{% url 'entreprises:detail' vehicule.entreprise.pk %}">{{ vehicule.entreprise.raison_sociale }}</a></dd></div>
+    <div><dt>Ajouté il y a</dt><dd>{{ vehicule.created_at|timesince }}</dd></div>
+  </dl>
+</div>
 
-<p>
-  <a href="{% url 'vehicules:modifier' vehicule.pk %}">Modifier</a> |
-  <a href="{% url 'vehicules:supprimer' vehicule.pk %}">Supprimer</a> |
-  <a href="{% url 'vehicules:liste' %}">← Retour à la liste</a>
-</p>
+<section class="section card">
+  <div class="section-header">
+    <h2>Offres où ce véhicule est proposé ({{ offres|length }})</h2>
+  </div>
+  <ul class="list">
+    {% for offre in offres %}
+      <li>
+        <span>
+          <a href="{% url 'offres:detail' offre.pk %}">{{ offre.expedition.reference }}</a>
+          <span class="price">{{ offre.prix|floatformat:2 }} DT</span>
+        </span>
+        <span class="badge badge-{{ offre.statut|slugify }}">{{ offre.get_statut_display }}</span>
+      </li>
+    {% empty %}
+      <li class="empty-line">Ce véhicule n'a encore été proposé sur aucune offre.</li>
+    {% endfor %}
+  </ul>
+</section>
 {% endblock %}

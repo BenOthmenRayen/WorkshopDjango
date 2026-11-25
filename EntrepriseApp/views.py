@@ -1,15 +1,32 @@
-from django.shortcuts import get_object_or_404, render
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from .forms import EntrepriseForm
+from .forms import EntrepriseCreationForm, EntrepriseForm, InscriptionForm
 from .models import Entreprise
+
+
+# =============================================================================
+# Authentification — Inscription
+# =============================================================================
+class InscriptionView(CreateView):
+    form_class = InscriptionForm
+    template_name = 'registration/inscription.html'
+    success_url = reverse_lazy('entreprises:ajouter')  # étape 2 : créer son entreprise
+
+    def form_valid(self, form):
+        response = super().form_valid(form)   # crée l'utilisateur (self.object)
+        login(self.request, self.object)      # ouvre directement sa session
+        return response
 
 
 # =============================================================================
 # Partie 2 — Class-Based Views (routées)
 # =============================================================================
-class EntrepriseListView(ListView):
+class EntrepriseListView(LoginRequiredMixin, ListView):
     model = Entreprise
     template_name = 'entreprises/liste.html'
     context_object_name = 'entreprises'
@@ -18,7 +35,7 @@ class EntrepriseListView(ListView):
         return Entreprise.objects.select_related('gerant').order_by('raison_sociale')
 
 
-class EntrepriseDetailView(DetailView):
+class EntrepriseDetailView(LoginRequiredMixin, DetailView):
     model = Entreprise
     template_name = 'entreprises/detail.html'
     context_object_name = 'entreprise'
@@ -38,16 +55,28 @@ class EntrepriseDetailView(DetailView):
         return context
 
 
-class EntrepriseCreateView(CreateView):
+class EntrepriseCreateView(LoginRequiredMixin, CreateView):
     model = Entreprise
-    form_class = EntrepriseForm
+    form_class = EntrepriseCreationForm
     template_name = 'entreprises/form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        # Relation 1–1 : un utilisateur qui gère déjà une entreprise ne peut pas en créer une deuxième
+        entreprise = getattr(request.user, 'entreprise', None)
+        if request.user.is_authenticated and entreprise is not None:
+            return redirect('entreprises:detail', pk=entreprise.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        # gerant : jamais choisi par le client, il est déduit de l'utilisateur connecté
+        form.instance.gerant = self.request.user
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('entreprises:detail', kwargs={'pk': self.object.pk})
 
 
-class EntrepriseUpdateView(UpdateView):
+class EntrepriseUpdateView(LoginRequiredMixin, UpdateView):
     model = Entreprise
     form_class = EntrepriseForm
     template_name = 'entreprises/form.html'
@@ -57,7 +86,7 @@ class EntrepriseUpdateView(UpdateView):
         return reverse('entreprises:detail', kwargs={'pk': self.object.pk})
 
 
-class EntrepriseDeleteView(DeleteView):
+class EntrepriseDeleteView(LoginRequiredMixin, DeleteView):
     model = Entreprise
     template_name = 'entreprises/confirm_delete.html'
     context_object_name = 'entreprise'
@@ -67,6 +96,7 @@ class EntrepriseDeleteView(DeleteView):
 # =============================================================================
 # Partie 1 — Function-Based Views (référence, non routées)
 # =============================================================================
+@login_required
 def liste_entreprises(request):
     entreprises = (
         Entreprise.objects
@@ -76,6 +106,7 @@ def liste_entreprises(request):
     return render(request, 'entreprises/liste.html', {'entreprises': entreprises})
 
 
+@login_required
 def detail_entreprise(request, pk):
     entreprise = get_object_or_404(
         Entreprise.objects.select_related('gerant'),

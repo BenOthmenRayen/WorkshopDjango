@@ -3,20 +3,40 @@
 {% block title %}Véhicules{% endblock %}
 
 {% block content %}
-<h2>{{ vehicules|length }} véhicule{{ vehicules|length|pluralize }}</h2>
-<p><a href="{% url 'vehicules:ajouter' %}">+ Ajouter un véhicule</a></p>
-<ul>
-  {% for vehicule in vehicules %}
-    <li>
-      <a href="{% url 'vehicules:detail' vehicule.pk %}">{{ vehicule.immatriculation|upper }}</a>
-      — {{ vehicule.get_type_vehicule_display }},
-      {{ vehicule.capacite_kg }} kg
-      — Disponible : {{ vehicule.disponibilite|yesno:"Oui,Non" }}
-      <br>
-      <small>{{ vehicule.entreprise.raison_sociale }}</small>
-    </li>
-  {% empty %}
-    <li>Aucun véhicule enregistré.</li>
-  {% endfor %}
-</ul>
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Flotte</p>
+    <h1>{{ vehicules|length }} véhicule{{ vehicules|length|pluralize }}</h1>
+    <p class="subtitle">Les véhicules des transporteurs inscrits.</p>
+  </div>
+  {% if user.is_authenticated %}
+    <div class="actions">
+      <a class="btn btn-primary" href="{% url 'vehicules:ajouter' %}">+ Ajouter un véhicule</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if vehicules %}
+  <div class="grid">
+    {% for vehicule in vehicules %}
+      <article class="item-card">
+        <div class="top">
+          <a class="title" href="{% url 'vehicules:detail' vehicule.pk %}">{{ vehicule.immatriculation|upper }}</a>
+          {% if vehicule.disponibilite %}
+            <span class="badge badge-oui">Disponible</span>
+          {% else %}
+            <span class="badge badge-non">Indisponible</span>
+          {% endif %}
+        </div>
+        <div class="stats">
+          <span>Type : <strong>{{ vehicule.get_type_vehicule_display }}</strong></span>
+          <span>Capacité : <strong>{{ vehicule.capacite_kg }} kg</strong></span>
+        </div>
+        <div class="meta">{{ vehicule.entreprise.raison_sociale }}</div>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty"><span class="icon">🚛</span>Aucun véhicule enregistré.</div>
+{% endif %}
 {% endblock %}

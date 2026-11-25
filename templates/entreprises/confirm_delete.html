@@ -3,15 +3,20 @@
 {% block title %}Supprimer {{ entreprise.raison_sociale }}{% endblock %}
 
 {% block content %}
-<h2>Supprimer {{ entreprise.raison_sociale }} ?</h2>
-<p>
-  Cette action est définitive. Tous ses véhicules, ses expéditions et ses offres
-  seront aussi supprimés. Le compte du gérant, lui, est conservé.
-</p>
+<div class="card danger-card">
+  <div class="icon-circle">⚠</div>
+  <h1>Supprimer {{ entreprise.raison_sociale }} ?</h1>
+  <p>
+    Cette action est définitive. Tous ses véhicules, ses expéditions et ses offres
+    seront aussi supprimés. Le compte du gérant, lui, est conservé.
+  </p>
 
-<form method="post">
-  {% csrf_token %}
-  <button type="submit">Confirmer la suppression</button>
-</form>
-<p><a href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a></p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+      <a class="btn btn-outline" href="{% url 'entreprises:detail' entreprise.pk %}">Annuler</a>
+    </div>
+  </form>
+</div>
 {% endblock %}

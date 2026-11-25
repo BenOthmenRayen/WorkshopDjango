@@ -3,62 +3,98 @@
 {% block title %}{{ entreprise.raison_sociale }}{% endblock %}
 
 {% block content %}
-<h2>{{ entreprise.raison_sociale }}</h2>
-<p>
-  <strong>Type :</strong> {{ entreprise.get_type_entreprise_display }}<br>
-  <strong>Matricule fiscal :</strong> {{ entreprise.matricule_fiscal|upper }}<br>
-  <strong>Adresse :</strong> {{ entreprise.adresse }}<br>
-  <strong>Gérant :</strong> {{ entreprise.gerant.username }}
-  ({{ entreprise.gerant.email|default:"email non renseigné" }})<br>
-  <strong>Inscrite il y a :</strong> {{ entreprise.created_at|timesince }}
-</p>
+<div class="page-header">
+  <div>
+    <p class="eyebrow"><a href="{% url 'entreprises:liste' %}">← Entreprises</a></p>
+    <h1>{{ entreprise.raison_sociale }}</h1>
+    <span class="badge badge-{{ entreprise.type_entreprise|slugify }}">{{ entreprise.get_type_entreprise_display }}</span>
+  </div>
+  {% if user.is_authenticated %}
+    <div class="actions">
+      <a class="btn btn-outline" href="{% url 'entreprises:modifier' entreprise.pk %}">Modifier</a>
+      <a class="btn btn-danger" href="{% url 'entreprises:supprimer' entreprise.pk %}">Supprimer</a>
+    </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <dl class="details">
+    <div><dt>Matricule fiscal</dt><dd>{{ entreprise.matricule_fiscal|upper }}</dd></div>
+    <div><dt>Adresse</dt><dd>{{ entreprise.adresse }}</dd></div>
+    <div><dt>Gérant</dt><dd>{{ entreprise.gerant.username }}<br><span class="muted">{{ entreprise.gerant.email|default:"email non renseigné" }}</span></dd></div>
+    <div><dt>Inscrite il y a</dt><dd>{{ entreprise.created_at|timesince }}</dd></div>
+  </dl>
+</div>
 
 {% if entreprise.type_entreprise == 'transporteur' %}
-  <h3>Véhicules ({{ vehicules|length }})</h3>
-  <p><a href="{% url 'vehicules:ajouter' %}?entreprise={{ entreprise.pk }}">+ Ajouter un véhicule</a></p>
-  <ul>
-    {% for vehicule in vehicules %}
-      <li>
-        <a href="{% url 'vehicules:detail' vehicule.pk %}">{{ vehicule.immatriculation|upper }}</a>
-        — {{ vehicule.get_type_vehicule_display }}
-        — Disponible : {{ vehicule.disponibilite|yesno:"Oui,Non" }}
-      </li>
-    {% empty %}
-      <li>Aucun véhicule.</li>
-    {% endfor %}
-  </ul>
+  <section class="section card">
+    <div class="section-header">
+      <h2>Véhicules ({{ vehicules|length }})</h2>
+      {% if user.is_authenticated %}
+        <a class="btn btn-primary btn-sm" href="{% url 'vehicules:ajouter' %}?entreprise={{ entreprise.pk }}">+ Ajouter un véhicule</a>
+      {% endif %}
+    </div>
+    <ul class="list">
+      {% for vehicule in vehicules %}
+        <li>
+          <span>
+            <a href="{% url 'vehicules:detail' vehicule.pk %}">{{ vehicule.immatriculation|upper }}</a>
+            <span class="muted">— {{ vehicule.get_type_vehicule_display }}</span>
+          </span>
+          {% if vehicule.disponibilite %}
+            <span class="badge badge-oui">Disponible</span>
+          {% else %}
+            <span class="badge badge-non">Indisponible</span>
+          {% endif %}
+        </li>
+      {% empty %}
+        <li class="empty-line">Aucun véhicule.</li>
+      {% endfor %}
+    </ul>
+  </section>
 
-  <h3>Offres ({{ offres|length }})</h3>
-  <p><a href="{% url 'offres:ajouter' entreprise.pk %}">+ Proposer une offre</a></p>
-  <ul>
-    {% for offre in offres %}
-      <li>
-        <a href="{% url 'offres:detail' offre.pk %}">{{ offre.expedition.reference }}</a>
-        — {{ offre.prix|floatformat:2 }} DT ({{ offre.get_statut_display }})
-      </li>
-    {% empty %}
-      <li>Aucune offre.</li>
-    {% endfor %}
-  </ul>
+  <section class="section card">
+    <div class="section-header">
+      <h2>Offres ({{ offres|length }})</h2>
+      {% if user.is_authenticated %}
+        <a class="btn btn-primary btn-sm" href="{% url 'offres:ajouter' entreprise.pk %}">+ Proposer une offre</a>
+      {% endif %}
+    </div>
+    <ul class="list">
+      {% for offre in offres %}
+        <li>
+          <span>
+            <a href="{% url 'offres:detail' offre.pk %}">{{ offre.expedition.reference }}</a>
+            <span class="price">{{ offre.prix|floatformat:2 }} DT</span>
+          </span>
+          <span class="badge badge-{{ offre.statut|slugify }}">{{ offre.get_statut_display }}</span>
+        </li>
+      {% empty %}
+        <li class="empty-line">Aucune offre.</li>
+      {% endfor %}
+    </ul>
+  </section>
 {% else %}
-  <h3>Expéditions ({{ expeditions|length }})</h3>
-  <p><a href="{% url 'expeditions:ajouter' entreprise.pk %}">+ Publier une expédition</a></p>
-  <ul>
-    {% for expedition in expeditions %}
-      <li>
-        <a href="{% url 'expeditions:detail' expedition.reference %}">{{ expedition.reference }}</a>
-        — {{ expedition.ville_depart|title }} → {{ expedition.ville_arrive|title }}
-        ({{ expedition.get_statut_display }})
-      </li>
-    {% empty %}
-      <li>Aucune expédition.</li>
-    {% endfor %}
-  </ul>
+  <section class="section card">
+    <div class="section-header">
+      <h2>Expéditions ({{ expeditions|length }})</h2>
+      {% if user.is_authenticated %}
+        <a class="btn btn-primary btn-sm" href="{% url 'expeditions:ajouter' entreprise.pk %}">+ Publier une expédition</a>
+      {% endif %}
+    </div>
+    <ul class="list">
+      {% for expedition in expeditions %}
+        <li>
+          <span>
+            <a href="{% url 'expeditions:detail' expedition.reference %}">{{ expedition.reference }}</a>
+            <span class="muted">— {{ expedition.ville_depart|title }} → {{ expedition.ville_arrive|title }}</span>
+          </span>
+          <span class="badge badge-{{ expedition.statut|slugify }}">{{ expedition.get_statut_display }}</span>
+        </li>
+      {% empty %}
+        <li class="empty-line">Aucune expédition.</li>
+      {% endfor %}
+    </ul>
+  </section>
 {% endif %}
-
-<p>
-  <a href="{% url 'entreprises:modifier' entreprise.pk %}">Modifier</a> |
-  <a href="{% url 'entreprises:supprimer' entreprise.pk %}">Supprimer</a> |
-  <a href="{% url 'entreprises:liste' %}">← Retour à la liste</a>
-</p>
 {% endblock %}

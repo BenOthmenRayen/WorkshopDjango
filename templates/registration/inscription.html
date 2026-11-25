@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Créer un compte{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-head">
+      <img src="{% static 'img/logo.svg' %}" alt="TransConnect" style="height:38px; display:block; margin-bottom:1rem;">
+      <h1>Créer un compte</h1>
+      <p>Étape 1/2 : votre compte. Vous créerez ensuite votre entreprise.</p>
+    </div>
+    <div class="auth-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
+      </form>
+
+      <p class="auth-switch">Déjà inscrit ? <a href="{% url 'login' %}">Se connecter</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -126,6 +126,7 @@ USE_TZ = True  # les dates sont stockées en UTC. C’est pour ça que la page d
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']  # dossier static/ commun (css/style.css)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -136,3 +137,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL="EntrepriseApp.Utilisateur"
 #Remplace l’utilisateur par défaut de Django par le vôtre. Format "App.Modele". 
 # Elle doit être déclarée avant le premier migrate.
+
+# --- Authentification (Workshop Partie Authentification) ---
+# Ces trois paramètres acceptent un name de route : aucune URL codée en dur.
+LOGIN_URL = 'login'                        # où envoyer un visiteur non connecté
+LOGIN_REDIRECT_URL = 'expeditions:liste'   # où aller après une connexion réussie
+LOGOUT_REDIRECT_URL = 'expeditions:liste'  # où aller après une déconnexion

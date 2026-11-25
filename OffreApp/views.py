@@ -1,3 +1,5 @@
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,7 +18,7 @@ from .models import Offre
 # =============================================================================
 # Partie 2 — Class-Based Views (routées)
 # =============================================================================
-class OffreListView(ListView):
+class OffreListView(LoginRequiredMixin, ListView):
     model = Offre
     template_name = 'offres/liste.html'
     context_object_name = 'offres'
@@ -29,7 +31,7 @@ class OffreListView(ListView):
         )
 
 
-class OffreDetailView(DetailView):
+class OffreDetailView(LoginRequiredMixin, DetailView):
     model = Offre
     template_name = 'offres/detail.html'
     context_object_name = 'offre'
@@ -38,13 +40,13 @@ class OffreDetailView(DetailView):
         return Offre.objects.select_related('expedition', 'transporteur', 'vehicule')
 
 
-class OffreCreateView(CreateView):
+class OffreCreateView(LoginRequiredMixin, CreateView):
     model = Offre
     form_class = OffreForm
     template_name = 'offres/form.html'
 
     def get_entreprise_courante(self):
-        # Pas d'authentification : le transporteur est passé dans l'URL
+        # Le transporteur est encore passé dans l'URL (remplacé par request.user en section VI)
         return get_object_or_404(
             Entreprise, pk=self.kwargs['entreprise_id'], type_entreprise='transporteur'
         )
@@ -87,7 +89,7 @@ class OffreCreateView(CreateView):
         return reverse('expeditions:detail', kwargs={'reference': self.object.expedition.reference})
 
 
-class OffreUpdateView(UpdateView):
+class OffreUpdateView(LoginRequiredMixin, UpdateView):
     model = Offre
     form_class = OffreModificationForm
     template_name = 'offres/form.html'
@@ -117,7 +119,7 @@ class OffreUpdateView(UpdateView):
         return reverse('offres:detail', kwargs={'pk': self.object.pk})
 
 
-class OffreDeleteView(DeleteView):
+class OffreDeleteView(LoginRequiredMixin, DeleteView):
     model = Offre
     template_name = 'offres/confirm_delete.html'
     context_object_name = 'offre'
@@ -131,6 +133,7 @@ class OffreDeleteView(DeleteView):
 # =============================================================================
 # Partie 1 — Function-Based Views (référence, non routées)
 # =============================================================================
+@login_required
 def liste_offres(request):
     offres = (
         Offre.objects
@@ -140,6 +143,7 @@ def liste_offres(request):
     return render(request, 'offres/liste.html', {'offres': offres})
 
 
+@login_required
 def detail_offre(request, pk):
     offre = get_object_or_404(
         Offre.objects.select_related('expedition', 'transporteur', 'vehicule'),
@@ -148,6 +152,7 @@ def detail_offre(request, pk):
     return render(request, 'offres/detail.html', {'offre': offre})
 
 
+@login_required
 @require_POST
 def supprimer_offre(request, pk):
     offre = get_object_or_404(Offre, pk=pk)

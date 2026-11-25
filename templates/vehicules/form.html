@@ -3,21 +3,29 @@
 {% block title %}{% if vehicule %}Modifier {{ vehicule.immatriculation|upper }}{% else %}Ajouter un véhicule{% endif %}{% endblock %}
 
 {% block content %}
-{% if vehicule %}
-  <h2>Modifier le véhicule {{ vehicule.immatriculation|upper }}</h2>
-{% else %}
-  <h2>Ajouter un véhicule</h2>
-{% endif %}
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Véhicules</p>
+    {% if vehicule %}
+      <h1>Modifier le véhicule {{ vehicule.immatriculation|upper }}</h1>
+    {% else %}
+      <h1>Ajouter un véhicule</h1>
+    {% endif %}
+  </div>
+</div>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Enregistrer</button>
-</form>
-
-{% if vehicule %}
-  <p><a href="{% url 'vehicules:detail' vehicule.pk %}">Annuler</a></p>
-{% else %}
-  <p><a href="{% url 'vehicules:liste' %}">Annuler</a></p>
-{% endif %}
+<div class="card form-card">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Enregistrer</button>
+      {% if vehicule %}
+        <a class="btn btn-outline" href="{% url 'vehicules:detail' vehicule.pk %}">Annuler</a>
+      {% else %}
+        <a class="btn btn-outline" href="{% url 'vehicules:liste' %}">Annuler</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
 {% endblock %}

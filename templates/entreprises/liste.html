@@ -3,19 +3,35 @@
 {% block title %}Entreprises{% endblock %}
 
 {% block content %}
-<h2>{{ entreprises|length }} entreprise{{ entreprises|length|pluralize }}</h2>
-<p><a href="{% url 'entreprises:ajouter' %}">+ Ajouter une entreprise</a></p>
-<ul>
-  {% for entreprise in entreprises %}
-    <li>
-      <a href="{% url 'entreprises:detail' entreprise.pk %}">{{ entreprise.raison_sociale }}</a>
-      — {{ entreprise.get_type_entreprise_display }}
-      — MF : {{ entreprise.matricule_fiscal|upper }}
-      <br>
-      <small>Gérant : {{ entreprise.gerant.username }}</small>
-    </li>
-  {% empty %}
-    <li>Aucune entreprise enregistrée.</li>
-  {% endfor %}
-</ul>
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Annuaire</p>
+    <h1>{{ entreprises|length }} entreprise{{ entreprises|length|pluralize }}</h1>
+    <p class="subtitle">Chargeurs et transporteurs inscrits sur la plateforme.</p>
+  </div>
+  {% if user.is_authenticated and not user.entreprise %}
+    <div class="actions">
+      <a class="btn btn-primary" href="{% url 'entreprises:ajouter' %}">+ Créer mon entreprise</a>
+    </div>
+  {% endif %}
+</div>
+
+{% if entreprises %}
+  <div class="grid">
+    {% for entreprise in entreprises %}
+      <article class="item-card">
+        <div class="top">
+          <a class="title" href="{% url 'entreprises:detail' entreprise.pk %}">{{ entreprise.raison_sociale }}</a>
+          <span class="badge badge-{{ entreprise.type_entreprise|slugify }}">{{ entreprise.get_type_entreprise_display }}</span>
+        </div>
+        <div class="stats">
+          <span>MF : <strong>{{ entreprise.matricule_fiscal|upper }}</strong></span>
+        </div>
+        <div class="meta">Gérant : {{ entreprise.gerant.username }}</div>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty"><span class="icon">🏢</span>Aucune entreprise enregistrée.</div>
+{% endif %}
 {% endblock %}
